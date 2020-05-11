@@ -19,15 +19,20 @@ module Dino
         if on_windows?
           io; sleep 3
         end
-        
+
         super
       end
 
       private
 
       def connect
-        tty_devices.each { |device| return SerialPort.new(device, @baud) rescue nil }
-        raise BoardNotFound
+        #tty_devices.each { |device| return SerialPort.new(device, @baud) rescue nil }
+        connection = tty_devices.grep(/cu/i)
+        if connection.empty?
+          raise BoardNotFound, 'Board theek se lagao'
+        else
+          SerialPort.new(connection[0], 115200)
+        end
       end
 
       def tty_devices
@@ -42,3 +47,5 @@ module Dino
     end
   end
 end
+
+tty_devices = `ls /dev`.split("\n").grep(/usb|ACM/i).map{ |d| "/dev/#{d}" }
